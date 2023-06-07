@@ -20,3 +20,10 @@ if [ "$1" = "destroy" ]; then
   aws ec2 start-instances --instance-ids "${STOPPED_INSTANCE_IDS[@]}"
 fi
 
+
+if [ "$1" = "create" ]; then
+  echo "creating instance..."
+  aws ec2 run-instances --image-id "ami-0715c1897453cabd1" --instance-type "t2.micro" --key-name "key" --security-group-ids "launch-wizard-1" --subnet-id "subnet-04a1b30c46b166e42" 
+  git clone https://github.com/Roy-Latin/DevOps-Crypto.git /home/ec2-user/
+
+fi
