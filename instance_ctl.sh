@@ -1,25 +1,30 @@
 #!/bin/bash
-
+echo "please select what AWS command you want:| start | stop | destroy | create |"
+read input
 #start all stopped instances
-if [ "$1" = "start" ]; then
-    #takes the ID'S of all stopped instances
+if [ "$input" = "start" ]; then
+    #takes the ID'S of all stopped and stopping instances
     STOPPED_INSTANCE_IDS=($(aws ec2 describe-instances --filters "Name=instance-state-name,Values=stopped" --query "Reservations[].Instances[].InstanceId" --output text))
+    STOPPING_INSTANCE_IDS=($(aws ec2 describe-instances --filters "Name=instance-state-name,Values=stopping" --query "Reservations[].Instances[].InstanceId" --output text))
     echo "Starting instances..."
     #starts all the instances with the gatherd ID'S
     aws ec2 start-instances --instance-ids "${STOPPED_INSTANCE_IDS[@]}"
+    aws ec2 start-instances --instance-ids "${STOPPING_INSTANCE_IDS[@]}"
 fi
 
 #stop all running instances
-if [ "$1" = "stop" ]; then
-    #takes the ID'S of all running instances
+if [ "$input" = "stop" ]; then
+    #takes the ID'S of all running and pending instances
     RUNNING_INSTANCE_IDS=($(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query "Reservations[].Instances[].InstanceId" --output text))
+    PENDING_INSTANCE_IDS=($(aws ec2 describe-instances --filters "Name=instance-state-name,Values=pending" --query "Reservations[].Instances[].InstanceId" --output text))
     echo "Stopping instances..."
     #stops all the instances with the gatherd ID'S
     aws ec2 stop-instances --instance-ids "${RUNNING_INSTANCE_IDS[@]}"
+    aws ec2 stop-instances --instance-ids "${PENDING_INSTANCE_IDS[@]}"
 fi
 
 #terminate all instances
-if [ "$1" = "destroy" ]; then
+if [ "$input" = "destroy" ]; then
   #takes the ID'S of all running instances
   RUNNING_INSTANCE_IDS=($(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query "Reservations[].Instances[].InstanceId" --output text))
   #takes the ID'S of all stopped instances
@@ -31,7 +36,7 @@ if [ "$1" = "destroy" ]; then
 fi
 
 #create a new AMI 
-if [ "$1" = "create" ]; then
+if [ "$input" = "create" ]; then
   #creates a new instance with the information below and puts in the user data a script to install tools, clone git repo, create a service file and run the flask, all happening on instance startup
   echo "creating instance..."
   new_instance=$(aws ec2 run-instances --image-id "ami-0715c1897453cabd1" --instance-type "t2.micro" --key-name "key" --security-group-ids "sg-0582c9864fa0768cc" --subnet-id "subnet-04a1b30c46b166e42"  --count "1" --output text --query 'Instances[0].InstanceId' --user-data '#!/bin/bash
