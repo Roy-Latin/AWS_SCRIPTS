@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "please select what AWS command you want:| start | stop | destroy | create |"
+echo "please select what AWS command you want:| start | stop | destroy | AMI |"
 read input
 #start all stopped instances
 if [ "$input" = "start" ]; then
@@ -36,7 +36,7 @@ if [ "$input" = "destroy" ]; then
 fi
 
 #create a new AMI 
-if [ "$input" = "create" ]; then
+if [ "$input" = "AMI" ]; then
   #creates a new instance with the information below and puts in the user data a script to install tools, clone git repo, create a service file and run the flask, all happening on instance startup
   echo "creating instance..."
   new_instance=$(aws ec2 run-instances --image-id "ami-0715c1897453cabd1" --instance-type "t2.micro" --key-name "key" --security-group-ids "sg-0582c9864fa0768cc" --subnet-id "subnet-04a1b30c46b166e42"  --count "1" --output text --query 'Instances[0].InstanceId' --user-data '#!/bin/bash
